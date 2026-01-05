@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Minimal Expense Tracker</title>
+    <style>
+      :root {
+        --primary: #333;
+        --accent: #007bff;
+        --bg: #f4f4f9;
+        --danger: #dc3545;
+        --text-light: #6c757d;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        background-color: var(--bg);
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        min-height: 100vh;
+        margin: 0;
+        padding: 20px;
+        box-sizing: border-box;
+      }
+      .container {
+        position: relative; /* For absolute positioning of reset icon */
+        background: white;
+        width: 100%;
+        max-width: 400px;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      }
+      h2 {
+        margin-top: 0;
+        margin-bottom: 20px;
+        text-align: center;
+        color: var(--primary);
+        font-weight: 600;
+      }
+
+      /* Add-section: groups header + inputs + add button for mobile-first layout */
+      .add-section {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+      }
+
+      /* Reset Icon Button */
+      .reset-icon-btn {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #e1e1e1;
+        padding: 5px;
+        transition: color 0.2s;
+      }
+      .reset-icon-btn:hover {
+        color: var(--danger);
+      }
+
+      /* Input Section */
+      .input-group {
+        display: flex;
+        flex-direction: column; /* Stack vertically */
+        gap: 10px;
+        margin-bottom: 15px;
+      }
+      input {
+        width: 100%; /* Full width */
+        box-sizing: border-box; /* Prevent padding from breaking layout */
+        padding: 15px;
+        border: 1px solid #999; /* Darker border for better visibility */
+        border-radius: 8px;
+        font-size: 20px;
+        outline: none;
+        transition: border-color 0.2s;
+      }
+      input:focus {
+        border-color: var(--accent);
+        border-width: 2px; /* Slightly thicker on focus */
+        padding: 14px; /* Adjust padding to prevent layout shift with thicker border */
+      }
+
+      /* Reset specific widths */
+      input#desc {
+        width: 100%;
+        font-size: 22px; /* larger description text */
+      }
+      input#amount {
+        width: 100%;
+        text-align: left;
+        font-weight: bold;
+        font-size: 22px; /* larger amount text */
+      }
+
+      /* Amount wrapper with currency prefix */
+      .amount-wrapper {
+        position: relative;
+        width: 100%;
+      }
+      .amount-wrapper .currency-prefix {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-light);
+        font-size: 20px;
+        pointer-events: none; /* let clicks go to the input */
+      }
+      /* Make space for the prefix inside the input */
+      .amount-wrapper input {
+        padding-left: 34px;
+      }
+
+      button#add-btn {
+        background-color: var(--accent);
+        color: white;
+        border: none;
+        padding: 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 16px;
+        width: 100%;
+        transition: background-color 0.2s;
+        /* Prevent tap highlight color on mobile */
+        -webkit-tap-highlight-color: transparent;
+      }
+      button#add-btn:hover {
+        background-color: #0056b3;
+      }
+      button#add-btn:active {
+        transform: translateY(1px);
+      }
+
+      /* List Styling */
+      .section-title {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-light);
+        margin: 50px 0 15px 0; /* Increased top margin for spacing */
+        font-weight: 600;
+      }
+
+      ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      li {
+        background: #fff;
+        border-bottom: 1px solid #f0f0f0;
+        padding: 12px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      li:last-child {
+        border-bottom: none;
+      }
+
+      .details {
+        display: flex;
+        flex-direction: column;
+      }
+      .amt {
+        font-weight: 600;
+        font-size: 1.25em; /* larger displayed amount */
+        color: var(--danger);
+      }
+      .desc {
+        font-size: 1.05em; /* slightly larger description text */
+        color: var(--primary);
+        font-weight: 500;
+      }
+      .date {
+        font-size: 0.75em;
+        color: var(--text-light);
+        margin-top: 4px;
+      }
+
+      /* History Toggle */
+      .history-controls {
+        margin-top: 20px;
+        text-align: center;
+        border-top: 1px dashed #e1e1e1;
+        padding-top: 15px;
+      }
+      .history-btn {
+        background: none;
+        border: none;
+        color: var(--text-light);
+        cursor: pointer;
+        font-size: 0.9em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        margin: 0 auto;
+        padding: 8px 15px;
+        border-radius: 20px;
+        transition: background 0.2s;
+      }
+      .history-btn:hover {
+        background: #f0f0f0;
+        color: var(--primary);
+      }
+
+      /* Hidden/Show logic */
+      #full-history-container {
+        display: none;
+        margin-top: 15px;
+        animation: fadeIn 0.3s ease-in-out;
+      }
+      #full-history-container.show {
+        display: block;
+      }
+
+      #full-history {
+        max-height: 300px;
+        overflow-y: auto;
+        scrollbar-width: thin;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-5px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .empty-state {
+        text-align: center;
+        color: #ccc;
+        font-style: italic;
+        padding: 10px;
+      }
+
+      /* Modal Styles */
+      .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+        backdrop-filter: blur(2px);
+      }
+      .modal-overlay.show {
+        display: flex;
+      }
+
+      .modal-box {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 320px;
+        text-align: center;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+          0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        animation: scaleIn 0.2s ease-out;
+      }
+      @keyframes scaleIn {
+        from {
+          transform: scale(0.95);
+          opacity: 0;
+        }
+        to {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      .modal-box h3 {
+        color: var(--danger);
+        margin-top: 0;
+      }
+      .modal-box p {
+        color: var(--text-light);
+        font-size: 0.9em;
+        margin-bottom: 20px;
+      }
+      .modal-box input {
+        width: 100%;
+        box-sizing: border-box;
+        margin-bottom: 20px;
+        text-align: center;
+        letter-spacing: 1px;
+      }
+
+      .modal-actions {
+        display: flex;
+        gap: 10px;
+      }
+      .modal-btn {
+        flex: 1;
+        padding: 10px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+      }
+      .btn-cancel {
+        background: #f0f0f0;
+        color: #333;
+      }
+      .btn-confirm {
+        background: var(--danger);
+        color: white;
+        opacity: 0.5;
+        cursor: not-allowed;
+        transition: opacity 0.2s;
+      }
+      .btn-confirm.active {
+        opacity: 1;
+        cursor: pointer;
+      }
+
+      /* Summary Section Styles */
+      .summary-container {
+        display: flex;
+        gap: 15px;
+        margin-top: 0;
+        margin-bottom: 20px;
+      }
+      .summary-box {
+        flex: 1;
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+        border: 1px solid #eee;
+      }
+      .summary-label {
+        display: block;
+        font-size: 0.75rem;
+        color: var(--text-light);
+        margin-bottom: 5px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+      }
+      .summary-amount {
+        display: block;
+        font-size: 1.2em;
+        font-weight: 700;
+        color: var(--primary);
+      }
+
+      /* Mobile Optimization */
+      @media (max-width: 480px) {
+        body {
+          padding: 10px;
+        }
+        .container {
+          padding: 18px;
+          border-radius: 12px;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+          max-width: 100%;
+        }
+
+        /* Make the add-section take ~60% of viewport height on small screens */
+        .add-section {
+          min-height: 60vh; /* roughly 60% of the page height */
+          justify-content: center; /* center inputs vertically inside that area */
+          padding: 8px 0;
+        }
+
+        /* Slightly larger tap targets for inputs and button */
+        input,
+        button#add-btn {
+          padding: 16px; /* Larger touch targets */
+          font-size: 19px; /* Prevent iOS zoom; larger for readability */
+          border-radius: 10px;
+        }
+
+        /* Mobile: adjust prefix sizing and spacing */
+        .amount-wrapper .currency-prefix {
+          left: 14px;
+          font-size: 22px;
+        }
+        .amount-wrapper input {
+          padding-left: 40px;
+        }
+
+        .reset-icon-btn {
+          padding: 10px; /* Larger touch target for icon */
+        }
+
+        /* Keep recent list visible below the add-section with space to scroll */
+        #full-history {
+          max-height: 40vh;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- Reset Icon Top Right -->
+      <button
+        class="reset-icon-btn"
+        onclick="openResetModal()"
+        title="Reset All Data"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <polyline points="3 6 5 6 21 6" />
+          <path
+            d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+          />
+          <line x1="10" y1="11" x2="10" y2="17" />
+          <line x1="14" y1="11" x2="14" y2="17" />
+        </svg>
+      </button>
+
+      <div class="add-section">
+        <h2>Expense Tracker</h2>
+
+        <!-- Input Section: Swapped Order -->
+        <div class="input-group">
+          <input
+            type="text"
+            id="desc"
+            placeholder="Description (e.g. Chai)"
+            required
+          />
+          <!-- Amount with visual rupee prefix; input value remains numeric-only -->
+          <div class="amount-wrapper">
+            <span class="currency-prefix" aria-hidden="true">₹</span>
+            <input
+              type="text"
+              inputmode="decimal"
+              id="amount"
+              placeholder="Amount"
+              required
+            />
+          </div>
+        </div>
+        <button id="add-btn" onclick="addExpense()">Add Expense</button>
+      </div>
+
+      <!-- Recent Items (Last 2) -->
+      <div class="section-title">Recent Activity</div>
+      <ul id="recent-list"></ul>
+
+      <!-- Full History Section -->
+      <div class="history-controls">
+        <!-- Monthly Summary Section -->
+        <div class="summary-container">
+          <div class="summary-box">
+            <span class="summary-label">This Month</span>
+            <span class="summary-amount" id="this-month-total">₹0</span>
+          </div>
+          <div class="summary-box">
+            <span class="summary-label">Last Month</span>
+            <span class="summary-amount" id="last-month-total">₹0</span>
+          </div>
+        </div>
+
+        <button class="history-btn" onclick="toggleHistory()">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M3 3v18h18" />
+            <path d="M18.4 8.1 12 14.5 7.6 10.1" />
+          </svg>
+          <span id="history-btn-text">Show History</span>
+        </button>
+
+        <div id="full-history-container">
+          <ul id="full-history"></ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reset Modal -->
+    <div id="reset-modal" class="modal-overlay">
+      <div class="modal-box">
+        <h3>Reset Data</h3>
+        <p>
+          This will delete all history permanently.<br />Type
+          <strong>lorem</strong> to confirm.
+        </p>
+        <input
+          type="text"
+          id="reset-input"
+          placeholder="Type 'lorem'"
+          autocomplete="off"
+        />
+        <div class="modal-actions">
+          <button class="modal-btn btn-cancel" onclick="closeResetModal()">
+            Cancel
+          </button>
+          <button
+            id="confirm-reset-btn"
+            class="modal-btn btn-confirm"
+            onclick="executeReset()"
+            disabled
+          >
+            Reset
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Constants
+      const STORAGE_KEY = "minimal_expenses_v1";
+      const THREE_MONTHS_MS = 90 * 24 * 60 * 60 * 1000;
+
+      // Initialize logic
+      let expenses = loadExpenses();
+
+      cleanupOldData();
+      saveExpenses();
+      render();
+
+      // Setup Amount Formatting
+      const amountInput = document.getElementById("amount");
+
+      // Auto-add commas while typing
+      amountInput.addEventListener("input", function (e) {
+        // Remove all non-numeric chars except dot
+        let value = this.value.replace(/[^0-9.]/g, "");
+
+        if (!value) return;
+
+        // Split decimal part to preserve it
+        const parts = value.split(".");
+        const integerPart = parts[0];
+        const decimalPart = parts.length > 1 ? "." + parts[1].slice(0, 2) : "";
+
+        // Format integer part with Indian locale
+        if (integerPart) {
+          const formattedInt = parseInt(integerPart).toLocaleString("en-IN");
+          this.value = formattedInt + decimalPart;
+        } else {
+          // Handle case like ".50"
+          this.value = value;
+        }
+      });
+
+      function addExpense() {
+        const amountInput = document.getElementById("amount");
+        const descInput = document.getElementById("desc");
+
+        // Remove commas before parsing
+        const rawAmount = amountInput.value.replace(/,/g, "");
+        const desc = descInput.value;
+
+        if (!rawAmount || !desc) {
+          amountInput.style.borderColor = !rawAmount ? "#dc3545" : "#e1e1e1";
+          descInput.style.borderColor = !desc ? "#dc3545" : "#e1e1e1";
+          return;
+        }
+
+        // Reset styles
+        amountInput.style.borderColor = "#e1e1e1";
+        descInput.style.borderColor = "#e1e1e1";
+
+        const newExpense = {
+          id: Date.now(),
+          amount: parseFloat(rawAmount),
+          desc: desc,
+          timestamp: new Date().toISOString(),
+        };
+
+        expenses.unshift(newExpense);
+
+        cleanupOldData();
+        saveExpenses();
+
+        // Reset Inputs
+        amountInput.value = "";
+        descInput.value = "";
+        descInput.focus(); // Focus back to description first
+        render();
+      }
+
+      function cleanupOldData() {
+        const now = new Date().getTime();
+        expenses = expenses.filter((item) => {
+          const itemTime = new Date(item.timestamp).getTime();
+          return now - itemTime < THREE_MONTHS_MS;
+        });
+      }
+
+      function saveExpenses() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(expenses));
+      }
+
+      function loadExpenses() {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        return stored ? JSON.parse(stored) : [];
+      }
+
+      function toggleHistory() {
+        const container = document.getElementById("full-history-container");
+        const btnText = document.getElementById("history-btn-text");
+
+        if (container.classList.contains("show")) {
+          container.classList.remove("show");
+          btnText.textContent = "Show History";
+        } else {
+          container.classList.add("show");
+          btnText.textContent = "Hide History";
+        }
+      }
+
+      function formatTime(isoString) {
+        const date = new Date(isoString);
+        return date.toLocaleString("en-US", {
+          month: "short",
+          day: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+        });
+      }
+
+      function createListItem(item) {
+        // Format amount with commas and Rupee symbol
+        const formattedAmount = parseFloat(item.amount).toLocaleString(
+          "en-IN",
+          {
+            maximumFractionDigits: 2,
+            minimumFractionDigits: 0, // Optional: can change to 2 if you always want .00
+          }
+        );
+
+        return `
+            <li>
+                <div class="details">
+                    <span class="desc">${item.desc}</span>
+                    <span class="date">${formatTime(item.timestamp)}</span>
+                </div>
+                <span class="amt">₹${formattedAmount}</span>
+            </li>
+        `;
+      }
+
+      function render() {
+        const recentList = document.getElementById("recent-list");
+        const fullHistory = document.getElementById("full-history");
+
+        const recentItems = expenses.slice(0, 2);
+
+        if (recentItems.length === 0) {
+          recentList.innerHTML =
+            '<div class="empty-state">No recent expenses</div>';
+        } else {
+          recentList.innerHTML = recentItems.map(createListItem).join("");
+        }
+
+        fullHistory.innerHTML = expenses.map(createListItem).join("");
+
+        if (expenses.length === 0) {
+          fullHistory.innerHTML =
+            '<div class="empty-state">No history available</div>';
+        }
+
+        // Update totals whenever we render
+        calculateTotals();
+      }
+
+      // Calculate and display monthly totals
+      function calculateTotals() {
+        const now = new Date();
+        const currentMonth = now.getMonth(); // 0-11
+        const currentYear = now.getFullYear();
+
+        // Calculate previous month index and year (handle January rollback)
+        let lastMonth = currentMonth - 1;
+        let lastMonthYear = currentYear;
+        if (lastMonth < 0) {
+          lastMonth = 11;
+          lastMonthYear = currentYear - 1;
+        }
+
+        let thisMonthTotal = 0;
+        let lastMonthTotal = 0;
+
+        expenses.forEach((item) => {
+          const date = new Date(item.timestamp);
+          const itemMonth = date.getMonth();
+          const itemYear = date.getFullYear();
+
+          if (itemMonth === currentMonth && itemYear === currentYear) {
+            thisMonthTotal += item.amount;
+          } else if (itemMonth === lastMonth && itemYear === lastMonthYear) {
+            lastMonthTotal += item.amount;
+          }
+        });
+
+        // Update DOM
+        document.getElementById("this-month-total").textContent =
+          formatCurrency(thisMonthTotal);
+        document.getElementById("last-month-total").textContent =
+          formatCurrency(lastMonthTotal);
+      }
+
+      function formatCurrency(amount) {
+        return (
+          "₹" +
+          amount.toLocaleString("en-IN", {
+            maximumFractionDigits: 2,
+            minimumFractionDigits: 0,
+          })
+        );
+      }
+
+      // Allow Enter key on amount to submit (since it's the last field now)
+      document
+        .getElementById("amount")
+        .addEventListener("keypress", function (e) {
+          if (e.key === "Enter") {
+            addExpense();
+          }
+        });
+
+      // --- RESET LOGIC ---
+      const resetModal = document.getElementById("reset-modal");
+      const resetInput = document.getElementById("reset-input");
+      const confirmBtn = document.getElementById("confirm-reset-btn");
+
+      function openResetModal() {
+        resetModal.classList.add("show");
+        resetInput.value = "";
+        validateResetInput();
+        setTimeout(() => resetInput.focus(), 100);
+      }
+
+      function closeResetModal() {
+        resetModal.classList.remove("show");
+      }
+
+      function validateResetInput() {
+        if (resetInput.value.toLowerCase() === "lorem") {
+          confirmBtn.classList.add("active");
+          confirmBtn.disabled = false;
+        } else {
+          confirmBtn.classList.remove("active");
+          confirmBtn.disabled = true;
+        }
+      }
+
+      resetInput.addEventListener("input", validateResetInput);
+
+      // Allow enter key in modal to trigger reset if valid
+      resetInput.addEventListener("keypress", function (e) {
+        if (e.key === "Enter" && !confirmBtn.disabled) {
+          executeReset();
+        }
+      });
+
+      function executeReset() {
+        expenses = [];
+        saveExpenses();
+        render();
+        closeResetModal();
+      }
+    </script>
+  </body>
+</html>
