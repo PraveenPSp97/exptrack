@@ -119,8 +119,8 @@
         padding-left: 34px;
       }
 
-      button#add-btn {
-        background-color: var(--accent);
+      .add-btn {
+        background: linear-gradient(45deg, var(--accent), #0056b3);
         color: white;
         border: none;
         padding: 12px;
@@ -129,15 +129,17 @@
         font-weight: 600;
         font-size: 16px;
         width: 100%;
-        transition: background-color 0.2s;
-        /* Prevent tap highlight color on mobile */
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         -webkit-tap-highlight-color: transparent;
       }
-      button#add-btn:hover {
-        background-color: #0056b3;
+      .add-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
       }
-      button#add-btn:active {
+      .add-btn:active {
         transform: translateY(1px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       }
 
       /* List Styling */
@@ -229,6 +231,40 @@
         max-height: 300px;
         overflow-y: auto;
         scrollbar-width: thin;
+      }
+
+      /* Tab Styles */
+      .tabs {
+        display: flex;
+        margin-bottom: 20px;
+        border-bottom: 1px solid #e1e1e1;
+      }
+      .tab-btn {
+        flex: 1;
+        background: none;
+        border: none;
+        padding: 10px;
+        cursor: pointer;
+        font-size: 16px;
+        color: var(--text-light);
+        border-bottom: 2px solid transparent;
+        transition: color 0.2s, border-bottom-color 0.2s;
+      }
+      .tab-btn.active {
+        color: var(--primary);
+        font-weight: 600;
+        border-bottom-color: var(--accent);
+        background-color: #f0f0f0;
+      }
+      .tab-content {
+        display: none;
+      }
+      .tab-content.active {
+        display: block;
+        animation: fadeIn 0.3s ease-in-out;
+      }
+      .amt.income {
+        color: #28a745; /* Green for income */
       }
 
       @keyframes fadeIn {
@@ -384,9 +420,8 @@
           padding: 8px 0;
         }
 
-        /* Slightly larger tap targets for inputs and button */
-        input,
-        button#add-btn {
+        /* Slightly larger tap targets for inputs */
+        input {
           padding: 16px; /* Larger touch targets */
           font-size: 19px; /* Prevent iOS zoom; larger for readability */
           border-radius: 10px;
@@ -440,70 +475,144 @@
         </svg>
       </button>
 
-      <div class="add-section">
-        <h2>Expense Tracker</h2>
+      <h2>Expense Tracker</h2>
 
-        <!-- Input Section: Swapped Order -->
-        <div class="input-group">
-          <input
-            type="text"
-            id="desc"
-            placeholder="Description (e.g. Chai)"
-            required
-          />
-          <!-- Amount with visual rupee prefix; input value remains numeric-only -->
-          <div class="amount-wrapper">
-            <span class="currency-prefix" aria-hidden="true">₹</span>
-            <input
-              type="text"
-              inputmode="decimal"
-              id="amount"
-              placeholder="Amount"
-              required
-            />
-          </div>
-        </div>
-        <button id="add-btn" onclick="addExpense()">Add Expense</button>
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('expense')">Expense</button>
+        <button class="tab-btn" onclick="switchTab('income')">Income</button>
       </div>
 
-      <!-- Recent Items (Last 2) -->
-      <div class="section-title">Recent Activity</div>
-      <ul id="recent-list"></ul>
-
-      <!-- Full History Section -->
-      <div class="history-controls">
-        <!-- Monthly Summary Section -->
-        <div class="summary-container">
-          <div class="summary-box">
-            <span class="summary-label">This Month</span>
-            <span class="summary-amount" id="this-month-total">₹0</span>
+      <div id="expense-section" class="tab-content active">
+        <div class="add-section">
+          <!-- Input Section: Swapped Order -->
+          <div class="input-group">
+            <input
+              type="text"
+              id="expense-desc"
+              placeholder="Description (e.g. Chai)"
+              required
+            />
+            <!-- Amount with visual rupee prefix; input value remains numeric-only -->
+            <div class="amount-wrapper">
+              <span class="currency-prefix" aria-hidden="true">₹</span>
+              <input
+                type="text"
+                inputmode="decimal"
+                id="expense-amount"
+                placeholder="Amount"
+                required
+              />
+            </div>
           </div>
-          <div class="summary-box">
-            <span class="summary-label">Last Month</span>
-            <span class="summary-amount" id="last-month-total">₹0</span>
-          </div>
+          <button id="add-expense-btn" class="add-btn" onclick="addExpense()">Add Expense</button>
         </div>
 
-        <button class="history-btn" onclick="toggleHistory()">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M3 3v18h18" />
-            <path d="M18.4 8.1 12 14.5 7.6 10.1" />
-          </svg>
-          <span id="history-btn-text">Show History</span>
-        </button>
+        <!-- Recent Items (Last 2) -->
+        <div class="section-title">Recent Activity</div>
+        <ul id="expense-recent-list"></ul>
 
-        <div id="full-history-container">
-          <ul id="full-history"></ul>
+        <!-- Full History Section -->
+        <div class="history-controls">
+          <!-- Monthly Summary Section -->
+          <div class="summary-container">
+            <div class="summary-box">
+              <span class="summary-label">This Month</span>
+              <span class="summary-amount" id="expense-this-month-total">₹0</span>
+            </div>
+            <div class="summary-box">
+              <span class="summary-label">Last Month</span>
+              <span class="summary-amount" id="expense-last-month-total">₹0</span>
+            </div>
+          </div>
+
+          <button class="history-btn" onclick="toggleHistory('expense')">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M3 3v18h18" />
+              <path d="M18.4 8.1 12 14.5 7.6 10.1" />
+            </svg>
+            <span id="expense-history-btn-text">Show History</span>
+          </button>
+
+          <div id="expense-full-history-container">
+            <ul id="expense-full-history"></ul>
+          </div>
+        </div>
+      </div>
+
+      <div id="income-section" class="tab-content">
+        <div class="add-section">
+          <!-- Input Section: Swapped Order -->
+          <div class="input-group">
+            <input
+              type="text"
+              id="income-desc"
+              placeholder="Description (e.g. Salary)"
+              required
+            />
+            <!-- Amount with visual rupee prefix; input value remains numeric-only -->
+            <div class="amount-wrapper">
+              <span class="currency-prefix" aria-hidden="true">₹</span>
+              <input
+                type="text"
+                inputmode="decimal"
+                id="income-amount"
+                placeholder="Amount"
+                required
+              />
+            </div>
+          </div>
+          <button id="add-income-btn" class="add-btn" onclick="addIncome()">Add Income</button>
+        </div>
+
+        <!-- Recent Items (Last 2) -->
+        <div class="section-title">Recent Activity</div>
+        <ul id="income-recent-list"></ul>
+
+        <!-- Full History Section -->
+        <div class="history-controls">
+          <!-- Monthly Summary Section -->
+          <div class="summary-container">
+            <div class="summary-box">
+              <span class="summary-label">This Month</span>
+              <span class="summary-amount" id="income-this-month-total">₹0</span>
+            </div>
+            <div class="summary-box">
+              <span class="summary-label">Last Month</span>
+              <span class="summary-amount" id="income-last-month-total">₹0</span>
+            </div>
+          </div>
+
+          <button class="history-btn" onclick="toggleHistory('income')">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M3 3v18h18" />
+              <path d="M18.4 8.1 12 14.5 7.6 10.1" />
+            </svg>
+            <span id="income-history-btn-text">Show History</span>
+          </button>
+
+          <div id="income-full-history-container">
+            <ul id="income-full-history"></ul>
+          </div>
         </div>
       </div>
     </div>
@@ -540,98 +649,126 @@
 
     <script>
       // Constants
-      const STORAGE_KEY = "minimal_expenses_v1";
+      const EXPENSE_STORAGE_KEY = "minimal_expenses_v1";
+      const INCOME_STORAGE_KEY = "minimal_income_v1";
       const THREE_MONTHS_MS = 90 * 24 * 60 * 60 * 1000;
+      let activeTab = "expense";
 
       // Initialize logic
-      let expenses = loadExpenses();
+      let expenses = loadData(EXPENSE_STORAGE_KEY);
+      let income = loadData(INCOME_STORAGE_KEY);
 
       cleanupOldData();
-      saveExpenses();
+      saveAllData();
       render();
+      setupEventListeners();
 
-      // Setup Amount Formatting
-      const amountInput = document.getElementById("amount");
+      function switchTab(tabName) {
+        activeTab = tabName;
+        render();
+      }
 
-      // Auto-add commas while typing
-      amountInput.addEventListener("input", function (e) {
-        // Remove all non-numeric chars except dot
-        let value = this.value.replace(/[^0-9.]/g, "");
+      function setupEventListeners() {
+        ["expense-amount", "income-amount"].forEach(id => {
+            const amountInput = document.getElementById(id);
+            amountInput.addEventListener("input", function (e) {
+                // Remove all non-numeric chars except dot
+                let value = this.value.replace(/[^0-9.]/g, "");
 
-        if (!value) return;
+                if (!value) return;
 
-        // Split decimal part to preserve it
-        const parts = value.split(".");
-        const integerPart = parts[0];
-        const decimalPart = parts.length > 1 ? "." + parts[1].slice(0, 2) : "";
+                // Split decimal part to preserve it
+                const parts = value.split(".");
+                const integerPart = parts[0];
+                const decimalPart = parts.length > 1 ? "." + parts[1].slice(0, 2) : "";
 
-        // Format integer part with Indian locale
-        if (integerPart) {
-          const formattedInt = parseInt(integerPart).toLocaleString("en-IN");
-          this.value = formattedInt + decimalPart;
-        } else {
-          // Handle case like ".50"
-          this.value = value;
-        }
-      });
+                // Format integer part with Indian locale
+                if (integerPart) {
+                const formattedInt = parseInt(integerPart).toLocaleString("en-IN");
+                this.value = formattedInt + decimalPart;
+                } else {
+                // Handle case like ".50"
+                this.value = value;
+                }
+            });
+            amountInput.addEventListener("keypress", function (e) {
+                if (e.key === "Enter") {
+                    if(activeTab === 'expense') addExpense();
+                    else addIncome();
+                }
+            });
+        });
+      }
 
       function addExpense() {
-        const amountInput = document.getElementById("amount");
-        const descInput = document.getElementById("desc");
+        const amountInput = document.getElementById("expense-amount");
+        const descInput = document.getElementById("expense-desc");
+        addTransaction(amountInput, descInput, "expense");
+      }
 
-        // Remove commas before parsing
+      function addIncome() {
+        const amountInput = document.getElementById("income-amount");
+        const descInput = document.getElementById("income-desc");
+        addTransaction(amountInput, descInput, "income");
+      }
+
+      function addTransaction(amountInput, descInput, type) {
         const rawAmount = amountInput.value.replace(/,/g, "");
-        const desc = descInput.value;
+        let desc = descInput.value;
 
-        if (!rawAmount || !desc) {
-          amountInput.style.borderColor = !rawAmount ? "#dc3545" : "#e1e1e1";
-          descInput.style.borderColor = !desc ? "#dc3545" : "#e1e1e1";
+        if (!rawAmount) {
+          amountInput.style.borderColor = "#dc3545";
           return;
         }
 
-        // Reset styles
+        if(!desc) {
+            desc = type === 'expense' ? 'Expense' : 'Income';
+        }
+
         amountInput.style.borderColor = "#e1e1e1";
         descInput.style.borderColor = "#e1e1e1";
 
-        const newExpense = {
+        const newTransaction = {
           id: Date.now(),
           amount: parseFloat(rawAmount),
           desc: desc,
           timestamp: new Date().toISOString(),
         };
 
-        expenses.unshift(newExpense);
+        if (type === "expense") {
+          expenses.unshift(newTransaction);
+        } else {
+          income.unshift(newTransaction);
+        }
 
         cleanupOldData();
-        saveExpenses();
+        saveAllData();
 
-        // Reset Inputs
         amountInput.value = "";
         descInput.value = "";
-        descInput.focus(); // Focus back to description first
+        descInput.focus();
         render();
       }
 
       function cleanupOldData() {
         const now = new Date().getTime();
-        expenses = expenses.filter((item) => {
-          const itemTime = new Date(item.timestamp).getTime();
-          return now - itemTime < THREE_MONTHS_MS;
-        });
+        expenses = expenses.filter((item) => now - new Date(item.timestamp).getTime() < THREE_MONTHS_MS);
+        income = income.filter((item) => now - new Date(item.timestamp).getTime() < THREE_MONTHS_MS);
       }
 
-      function saveExpenses() {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(expenses));
+      function saveAllData() {
+        localStorage.setItem(EXPENSE_STORAGE_KEY, JSON.stringify(expenses));
+        localStorage.setItem(INCOME_STORAGE_KEY, JSON.stringify(income));
       }
 
-      function loadExpenses() {
-        const stored = localStorage.getItem(STORAGE_KEY);
+      function loadData(key) {
+        const stored = localStorage.getItem(key);
         return stored ? JSON.parse(stored) : [];
       }
 
-      function toggleHistory() {
-        const container = document.getElementById("full-history-container");
-        const btnText = document.getElementById("history-btn-text");
+      function toggleHistory(type) {
+        const container = document.getElementById(`${type}-full-history-container`);
+        const btnText = document.getElementById(`${type}-history-btn-text`);
 
         if (container.classList.contains("show")) {
           container.classList.remove("show");
@@ -652,15 +789,15 @@
         });
       }
 
-      function createListItem(item) {
-        // Format amount with commas and Rupee symbol
+      function createListItem(item, type) {
         const formattedAmount = parseFloat(item.amount).toLocaleString(
           "en-IN",
           {
             maximumFractionDigits: 2,
-            minimumFractionDigits: 0, // Optional: can change to 2 if you always want .00
+            minimumFractionDigits: 0,
           }
         );
+        const amountClass = type === 'income' ? 'amt income' : 'amt';
 
         return `
             <li>
@@ -668,42 +805,39 @@
                     <span class="desc">${item.desc}</span>
                     <span class="date">${formatTime(item.timestamp)}</span>
                 </div>
-                <span class="amt">₹${formattedAmount}</span>
+                <span class="${amountClass}">₹${formattedAmount}</span>
             </li>
         `;
       }
 
       function render() {
-        const recentList = document.getElementById("recent-list");
-        const fullHistory = document.getElementById("full-history");
+        // Handle tabs
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById(`${activeTab}-section`).classList.add('active');
+        document.querySelector(`.tab-btn[onclick="switchTab('${activeTab}')"]`).classList.add('active');
 
-        const recentItems = expenses.slice(0, 2);
+        // Render expenses
+        const recentExpenseList = document.getElementById("expense-recent-list");
+        const fullExpenseHistory = document.getElementById("expense-full-history");
+        const recentExpenses = expenses.slice(0, 2);
+        recentExpenseList.innerHTML = recentExpenses.length ? recentExpenses.map(item => createListItem(item, 'expense')).join("") : '<div class="empty-state">No recent expenses</div>';
+        fullExpenseHistory.innerHTML = expenses.length ? expenses.map(item => createListItem(item, 'expense')).join("") : '<div class="empty-state">No history available</div>';
 
-        if (recentItems.length === 0) {
-          recentList.innerHTML =
-            '<div class="empty-state">No recent expenses</div>';
-        } else {
-          recentList.innerHTML = recentItems.map(createListItem).join("");
-        }
-
-        fullHistory.innerHTML = expenses.map(createListItem).join("");
-
-        if (expenses.length === 0) {
-          fullHistory.innerHTML =
-            '<div class="empty-state">No history available</div>';
-        }
-
-        // Update totals whenever we render
+        // Render income
+        const recentIncomeList = document.getElementById("income-recent-list");
+        const fullIncomeHistory = document.getElementById("income-full-history");
+        const recentIncome = income.slice(0, 2);
+        recentIncomeList.innerHTML = recentIncome.length ? recentIncome.map(item => createListItem(item, 'income')).join("") : '<div class="empty-state">No recent income</div>';
+        fullIncomeHistory.innerHTML = income.length ? income.map(item => createListItem(item, 'income')).join("") : '<div class="empty-state">No history available</div>';
+        
         calculateTotals();
       }
 
-      // Calculate and display monthly totals
       function calculateTotals() {
         const now = new Date();
-        const currentMonth = now.getMonth(); // 0-11
+        const currentMonth = now.getMonth();
         const currentYear = now.getFullYear();
-
-        // Calculate previous month index and year (handle January rollback)
         let lastMonth = currentMonth - 1;
         let lastMonthYear = currentYear;
         if (lastMonth < 0) {
@@ -711,46 +845,37 @@
           lastMonthYear = currentYear - 1;
         }
 
-        let thisMonthTotal = 0;
-        let lastMonthTotal = 0;
-
+        let expenseThisMonthTotal = 0;
+        let expenseLastMonthTotal = 0;
         expenses.forEach((item) => {
           const date = new Date(item.timestamp);
-          const itemMonth = date.getMonth();
-          const itemYear = date.getFullYear();
-
-          if (itemMonth === currentMonth && itemYear === currentYear) {
-            thisMonthTotal += item.amount;
-          } else if (itemMonth === lastMonth && itemYear === lastMonthYear) {
-            lastMonthTotal += item.amount;
+          if (date.getMonth() === currentMonth && date.getFullYear() === currentYear) {
+            expenseThisMonthTotal += item.amount;
+          } else if (date.getMonth() === lastMonth && date.getFullYear() === lastMonthYear) {
+            expenseLastMonthTotal += item.amount;
           }
         });
 
-        // Update DOM
-        document.getElementById("this-month-total").textContent =
-          formatCurrency(thisMonthTotal);
-        document.getElementById("last-month-total").textContent =
-          formatCurrency(lastMonthTotal);
+        let incomeThisMonthTotal = 0;
+        let incomeLastMonthTotal = 0;
+        income.forEach((item) => {
+          const date = new Date(item.timestamp);
+          if (date.getMonth() === currentMonth && date.getFullYear() === currentYear) {
+            incomeThisMonthTotal += item.amount;
+          } else if (date.getMonth() === lastMonth && date.getFullYear() === lastMonthYear) {
+            incomeLastMonthTotal += item.amount;
+          }
+        });
+        
+        document.getElementById("expense-this-month-total").textContent = formatCurrency(expenseThisMonthTotal);
+        document.getElementById("expense-last-month-total").textContent = formatCurrency(expenseLastMonthTotal);
+        document.getElementById("income-this-month-total").textContent = formatCurrency(incomeThisMonthTotal);
+        document.getElementById("income-last-month-total").textContent = formatCurrency(incomeLastMonthTotal);
       }
 
       function formatCurrency(amount) {
-        return (
-          "₹" +
-          amount.toLocaleString("en-IN", {
-            maximumFractionDigits: 2,
-            minimumFractionDigits: 0,
-          })
-        );
+        return ("₹" + amount.toLocaleString("en-IN", { maximumFractionDigits: 2, minimumFractionDigits: 0, }));
       }
-
-      // Allow Enter key on amount to submit (since it's the last field now)
-      document
-        .getElementById("amount")
-        .addEventListener("keypress", function (e) {
-          if (e.key === "Enter") {
-            addExpense();
-          }
-        });
 
       // --- RESET LOGIC ---
       const resetModal = document.getElementById("reset-modal");
@@ -779,8 +904,6 @@
       }
 
       resetInput.addEventListener("input", validateResetInput);
-
-      // Allow enter key in modal to trigger reset if valid
       resetInput.addEventListener("keypress", function (e) {
         if (e.key === "Enter" && !confirmBtn.disabled) {
           executeReset();
@@ -789,7 +912,8 @@
 
       function executeReset() {
         expenses = [];
-        saveExpenses();
+        income = [];
+        saveAllData();
         render();
         closeResetModal();
       }
